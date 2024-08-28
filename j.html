@@ -1,0 +1,354 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+
+<HEAD>
+	<TITLE> Jogo da Velha </TITLE>
+	<META NAME="Generator" CONTENT="EditPlus">
+	<META NAME="Author" CONTENT="">
+	<META NAME="Keywords" CONTENT="">
+	<META NAME="Description" CONTENT="">
+
+	<style>
+		body {
+			font-family: sans-serif;
+			background-image: url('./bg_star.png');
+			color: white;
+		}
+
+		table {
+			width: 550px;
+			height: 350px;
+			border: 1px solid black
+		}
+
+		table tr {
+			background-color: red;
+			font: bold 46px;
+			font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+			font-size: 70px;
+			color: white
+		}
+
+		table tr td {
+			text-align: center;
+			width: 33.33%
+		}
+
+		table tr td:hover {
+			cursor: pointer;
+		}
+
+		input[type=button] {
+			width: 150px;
+			height: 50px;
+			font-size: 20px;
+			font-weight: bold;
+			margin-bottom: 20px
+		}
+
+		fieldset {
+			font-size: 20;
+			font-weight: bold;
+			border: 2px solid blue;
+			width: 300px;
+			margin-bottom: 25px
+		}
+
+		body {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 100%;
+			height: 100%;
+			flex-direction: column;
+		}
+
+		#game {
+			position: absolute;
+		}
+
+		#menuTopo {
+			position: absolute;
+			top: 50px;
+			display: flex;
+			gap: 20px;
+			color: gray
+		}
+
+		#jogadorAtual {
+			color: white;
+		}
+
+		td {
+			border: 1px solid black;
+		}
+
+		#telaVitoria {
+			position: absolute;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			border: 2px solid black;
+			color: black;
+			background-color: white;
+			width: 400px;
+			height: 200px;
+			border-radius: 6px;
+			box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.384);
+			display: none;
+		}
+		#title {
+			position: absolute;
+			top: 10px;
+			font-size: 80px;
+			font-family: cursive;
+		}
+		#fieldsets {
+			display: flex;
+			gap: 20px;
+		}
+		fieldset {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-direction: column;
+		}
+		#madeby {
+			position: absolute;
+			bottom: 10px;
+		}
+	</style>
+
+	<script>
+
+		//DEIXA A DIV GAME ESCONDIDA
+		window.onload = function () { document.getElementById('game').style.visibility = 'hidden' };
+
+		function Jogador(nome, forma) {
+			this.nome = nome;
+			this.forma = forma;
+		}
+
+		var jogador1, jogador2;
+		//Jogador da rodada
+		var jogadorAtual;
+		var formas = ['👽', '🛸'];
+		var index = null;
+
+		/*
+			0 1 2
+			3 4 5
+			6 7 8
+		*/
+		var tabuleiro = new Array(9);
+
+
+		initGame = function () {
+			var nomeJogador1 = document.getElementById('jogador1').value;
+			var nomeJogador2 = document.getElementById('jogador2').value;
+			jogador1 = new Jogador(nomeJogador1, 0); //X
+			jogador2 = new Jogador(nomeJogador2, 1); //O
+
+			jogadorAtual = jogador1;
+			setLabelJogadorAtual();
+
+			//APOS DEFINIÇÃO DE JOGADORES, EXIBE A DIV E INICIA JOGO
+			document.getElementById('game').style.visibility = 'visible';
+			document.getElementById('fieldsets').style.visibility = 'hidden';
+			document.getElementById('title').style.display = 'none'
+
+		}
+
+		/*Reinicia a partida*/
+		reset = function () { window.location.reload(); }
+
+		/*Seta o nome do jogador da rodada na página HTML*/
+		setLabelJogadorAtual = function () {
+			var nomeJogador1 = document.getElementById('jogador1').value;
+			var nomeJogador2 = document.getElementById('jogador2').value;
+			document.getElementById('p1').innerHTML = 'Jogador um:  ' + nomeJogador1;
+			document.getElementById('p2').innerHTML = 'Jogador dois:  ' + nomeJogador2;
+			document.getElementById('jogadorAtual').innerHTML = 'Jogador atual:  ' + jogadorAtual.nome;
+		}
+
+		/*Verifica se o tabuleiro está completamente preenchido, se estiver, significa que ninguém venceu a rodada*/
+		tabuleiroIsFilled = function () {
+			var preenchidos = 0;
+			for (var i = 0; i < tabuleiro.length; i++)
+				if (tabuleiro[i] != undefined)
+					preenchidos++;
+			return preenchidos == tabuleiro.length;
+		}
+
+		/*Verifica a existência de ocorrências de um mesmo elemento(X ou O) nas linhas do tabuleiro, procurando um vencedor*/
+		allElementsInSomeLine = function () {
+			for (var i = 0; i < 7; i += 3) {
+				if (tabuleiro[i] == formas[0] && tabuleiro[i + 1] == formas[0] && tabuleiro[i + 2] == formas[0]) {
+					document.getElementById('telaVitoria').style.display = 'flex';
+					document.getElementById('vitoria-nome').innerHTML = jogador1.nome + ' venceu!!!';
+					setTimeout(() => {
+						reset();
+					}, 2000);
+				}
+				if (tabuleiro[i] == formas[1] && tabuleiro[i + 1] == formas[1] && tabuleiro[i + 2] == formas[1]) {
+					document.getElementById('telaVitoria').style.display = 'flex';
+					document.getElementById('vitoria-nome').innerHTML = jogador2.nome + ' venceu!!!';
+					setTimeout(() => {
+						reset();
+					}, 2000);
+				}
+			}
+		}
+
+		/*Verifica a existência de ocorrências de um mesmo elemento(X ou O) nas colunas do tabuleiro, procurando um vencedor*/
+		allElementsInSomeColumn = function () {
+			for (var i = 0; i < 3; i++) {
+				if (tabuleiro[i] == formas[0] && tabuleiro[i + 3] == formas[0] && tabuleiro[i + 6] == formas[0]) {
+					document.getElementById('telaVitoria').style.display = 'flex';
+					document.getElementById('vitoria-nome').innerHTML = jogador1.nome + ' venceu!!!';
+					setTimeout(() => {
+						reset();
+					}, 2000);
+				}
+				if (tabuleiro[i] == formas[1] && tabuleiro[i + 3] == formas[1] && tabuleiro[i + 6] == formas[1]) {
+					document.getElementById('telaVitoria').style.display = 'flex';
+					document.getElementById('vitoria-nome').innerHTML = jogador2.nome + ' venceu!!!';
+					setTimeout(() => {
+						reset();
+					}, 2000);
+				}
+			}
+
+		}
+
+		/*Verifica a existência de ocorrências de um mesmo elemento(X ou O) nas diagonais do tabuleiro, procurando um vencedor*/
+		allElementsInSomeDiagonal = function () {
+			if ((tabuleiro[0] == formas[0] && tabuleiro[4] == formas[0] && tabuleiro[8] == formas[0]) ||
+				(tabuleiro[2] == formas[0] && tabuleiro[4] == formas[0] && tabuleiro[6] == formas[0])) {
+				document.getElementById('telaVitoria').style.display = 'flex';
+				document.getElementById('vitoria-nome').innerHTML = jogador1.nome + ' venceu!!!';
+				setTimeout(() => {
+					reset();
+				}, 2000);
+			} else if ((tabuleiro[0] == formas[1] && tabuleiro[4] == formas[1] && tabuleiro[8] == formas[1]) ||
+				(tabuleiro[2] == formas[1] && tabuleiro[4] == formas[1] && tabuleiro[6] == formas[1])) {
+				document.getElementById('telaVitoria').style.display = 'flex';
+				document.getElementById('vitoria-nome').innerHTML = jogador2.nome + ' venceu!!!';
+				setTimeout(() => {
+					reset();
+				}, 2000);
+			}
+		}
+
+		/*Preenche a célula da tabela HTML escolhida pelo usuário ao clicar, além de cuidar do jogador atual da rodada e chamar as funções
+		  de verificação de algum ganhador */
+		setOnCeil = function (cel, pos) {
+			if (tabuleiro[pos] == undefined) {
+				cel.innerHTML = formas[jogadorAtual.forma];
+				tabuleiro[pos] = formas[jogadorAtual.forma];
+
+				//define o jogador da rodada
+				(jogadorAtual.forma == 0) ? jogadorAtual = jogador2 : jogadorAtual = jogador1;
+				setLabelJogadorAtual();
+
+			} else {
+				document.getElementById('telaVitoria').style.display = 'flex';
+				document.getElementById('vitoria-nome').innerHTML = 'Ops! Esse valor ja foi marcado.';
+				setTimeout(() => {
+					document.getElementById('telaVitoria').style.display = 'none';
+				}, 2000);
+			};
+
+			allElementsInSomeLine();
+			allElementsInSomeColumn();
+			allElementsInSomeDiagonal();
+
+			if (tabuleiroIsFilled()) {
+				document.getElementById('telaVitoria').style.display = 'flex';
+				document.getElementById('vitoria-nome').innerHTML = 'Ninguém venceu (horriveis)';
+				setTimeout(() => {
+					reset();
+				}, 2000);
+			}
+
+
+		}
+
+	</script>
+</HEAD>
+
+<BODY>
+	<p id="madeby">Feito por João Pedro Marques</p>
+	<h1 id="title">JOGO DA VELHA</h1>
+	<div id="fieldsets">
+		<fieldset>
+			<legend> Jogadores </legend>
+		<label for="Jogador 1"> Jogador 1: </label>
+	<input type="text" id="jogador1" maxlength="10"/>
+		<label for="Jogador 1"> Jogador 2: </label>
+		<input type="text" id="jogador2"  maxlength="10"/>
+	
+		<input type="button" value="Iniciar" style="margin-top:4px; height:25px; width:150px; font-size:14px"
+			onclick="javascript: initGame();" />
+		</fieldset>
+	<fieldset>
+		<legend>Instruções</legend>
+	<ul>
+		<li>Insira os nomes dos jogadores para começar.</li>
+		<li>Limite de 10 caracteres.</li>
+		<li>Faça uma linha (horizontal, vertical e diagonal) de simbolos primeiro, ganha!</li>
+	</ul>
+</fieldset>
+</div>
+
+	<div id="menuTopo">
+		<h4 id="p1"></h4>
+		<h3 id="jogadorAtual"> </h3>
+		<h4 id="p2"></h4>
+	</div>
+
+	<div id="game">
+		<table cellpadding="0" cellspacing="0">
+			<tr border="1">
+				<td onclick="javascript: setOnCeil(this, 0);"
+					onmouseover="javascript: this.style.backgroundColor = 'blue'"
+					onmouseout="javascript: this.style.backgroundColor = 'red'"> &nbsp; </td>
+				<td onclick="javascript: setOnCeil(this, 1);"
+					onmouseover="javascript: this.style.backgroundColor = 'blue'"
+					onmouseout="javascript: this.style.backgroundColor = 'red'"> &nbsp; </td>
+				<td onclick="javascript: setOnCeil(this, 2);"
+					onmouseover="javascript: this.style.backgroundColor = 'blue'"
+					onmouseout="javascript: this.style.backgroundColor = 'red'"> &nbsp; </td>
+			</tr>
+			<tr>
+				<td onclick="javascript: setOnCeil(this, 3);"
+					onmouseover="javascript: this.style.backgroundColor = 'blue'"
+					onmouseout="javascript: this.style.backgroundColor = 'red'"> &nbsp; </td>
+				<td onclick="javascript: setOnCeil(this, 4);"
+					onmouseover="javascript: this.style.backgroundColor = 'blue'"
+					onmouseout="javascript: this.style.backgroundColor = 'red'"> &nbsp; </td>
+				<td onclick="javascript: setOnCeil(this, 5);"
+					onmouseover="javascript: this.style.backgroundColor = 'blue'"
+					onmouseout="javascript: this.style.backgroundColor = 'red'"> &nbsp; </td>
+			</tr>
+			<tr>
+				<td onclick="javascript: setOnCeil(this, 6);"
+					onmouseover="javascript: this.style.backgroundColor = 'blue'"
+					onmouseout="javascript: this.style.backgroundColor = 'red'"> &nbsp; </td>
+				<td onclick="javascript: setOnCeil(this, 7);"
+					onmouseover="javascript: this.style.backgroundColor = 'blue'"
+					onmouseout="javascript: this.style.backgroundColor = 'red'"> &nbsp; </td>
+				<td onclick="javascript: setOnCeil(this, 8);"
+					onmouseover="javascript: this.style.backgroundColor = 'blue'"
+					onmouseout="javascript: this.style.backgroundColor = 'red'"> &nbsp; </td>
+			</tr>
+		</table>
+	</div>
+
+	<div id="telaVitoria">
+		<h3 id="vitoria-nome"></h3>
+	</div>
+
+</BODY>
+
+</HTML>
